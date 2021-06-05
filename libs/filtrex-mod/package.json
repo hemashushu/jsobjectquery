@@ -1,0 +1,17 @@
+{
+    "name": "filtrex-mod",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "node ./src/build.js",
+        "test": "mocha",
+        "test_mod": "mocha ./test/mod.js"
+    },
+    "devDependencies": {},
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "jsexception": "github:hemashushu/jsexception"
+    }
+}
