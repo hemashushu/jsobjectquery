@@ -77,18 +77,31 @@ class ObjectQuery {
      *   name: 'foo'
      * }
      *
-     * - 只有当原始值是数据对象时才支持该方法，否则会抛出异常
+     * - 只有当原始值是数据对象、或者数据对象数组时才支持该方法，否则会抛出异常
+     * - 只能浅复制数据对象的第一层属性，即不支持诸如 "addr.city" 的子对象属性名称。
      *
      * @param {*} nameSequence 对象的属性名称序列
      * @returns
      */
     select(nameSequence) {
-        if (!ObjectUtils.isObject(this.sourceObject)) {
-            throw new UnsupportedOperationException('Source data should be a data object');
+        if (Array.isArray(this.sourceObject)){
+            if (this.sourceObject.length === 0) {
+                return this;
+            }
+
+            let names = ObjectComposer.splitProperityNameSequence(nameSequence);
+            let value = this.sourceObject.map((item) => {
+                return ObjectComposer.compose(item, names);
+            });
+
+            return new ObjectQuery(value);
+
+        }else if (ObjectUtils.isObject(this.sourceObject)) {
+            let value = ObjectComposer.composeByProperityNameSequence(this.sourceObject, nameSequence);
+            return new ObjectQuery(value);
         }
 
-        let value = ObjectComposer.composeByProperityNameSequence(nameSequence);
-        return new ObjectQuery(value);
+        throw new UnsupportedOperationException('Source data should be a data object or an array of data object.');
     }
 
     /**
@@ -103,8 +116,12 @@ class ObjectQuery {
             throw new UnsupportedOperationException('Source data should be a data object array');
         }
 
-        let value = ObjectSorter.sortByOrderExpression(this.sourceObject, orderExpression);
-        return new ObjectQuery(value);
+        if (this.sourceObject.length === 0) {
+            return this;
+        }
+
+        ObjectSorter.sortByOrderExpression(this.sourceObject, orderExpression);
+        return this;
     }
 
     /**

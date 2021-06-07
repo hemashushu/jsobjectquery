@@ -24,10 +24,10 @@ describe('Arithmetics', () => {
     it('does math functions', () => {
         expect( eval('abs(-5)') ).equals(5);
         expect( eval('abs(5)') ).equals(5);
-        expect( eval('ceil(4.1)') ).equals(5);
-        expect( eval('ceil(4.6)') ).equals(5);
-        expect( eval('floor(4.1)') ).equals(4);
-        expect( eval('floor(4.6)') ).equals(4);
+        // expect( eval('ceil(4.1)') ).equals(5); // MOD:: REM 不支持该函数
+        // expect( eval('ceil(4.6)') ).equals(5); // MOD:: REM 不支持该函数
+        // expect( eval('floor(4.1)') ).equals(4); // MOD:: REM 不支持该函数
+        // expect( eval('floor(4.6)') ).equals(4); // MOD:: REM 不支持该函数
         expect( eval('round(4.1)') ).equals(4);
         expect( eval('round(4.6)') ).equals(5);
         expect( eval('sqrt(9)') ).equals(3);
@@ -35,7 +35,7 @@ describe('Arithmetics', () => {
 
 
     it('supports functions with multiple args', () => {
-        expect( eval('random() >= 0') ).equals(1);
+        // expect( eval('random() >= 0') ).equals(1); // MOD:: REM 不支持该函数
         expect( eval('min(2)') ).equals(2);
         expect( eval('max(2)') ).equals(2);
         expect( eval('min(2, 5)') ).equals(2);

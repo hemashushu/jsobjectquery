@@ -1,5 +1,5 @@
 const Jison = require("jison").Jison;
-const { ObjectUtils } = require('jsobjectutils');
+const { ObjectAccessor } = require('jsobjectutils');
 
 /**
  * Filtrex provides compileExpression() to compile user expressions to JavaScript.
@@ -15,14 +15,35 @@ exports.compileExpression =
     function compileExpression(expression, extraFunctions, customProp) {
         var functions = {
             abs: Math.abs,
-            ceil: Math.ceil,
-            floor: Math.floor,
-            log: Math.log,
+            // ceil: Math.ceil, // MOD:: REM 不常用
+            // floor: Math.floor, // MOD:: REM 不常用
+            // log: Math.log,
+            ln: Math.log, // MOD:: ADD 自然对数
+            exp: Math.exp, // MOD:: ADD e 的 x 次方
+            log10: Math.log10, // MOD:: ADD 常用对数，以 10 为底数的对数函数
             max: Math.max,
             min: Math.min,
-            random: Math.random,
+            // random: Math.random, // MOD:: REM 不常用
             round: Math.round,
             sqrt: Math.sqrt,
+
+            // MOD:: ADD BLOCK
+            // MOD:: REM new add 'maxof(p)' function
+            // MOD:: REM e.g.
+            // MOD:: REM maxof(someObject.arrayValueProperty)
+            maxof: (v) => {
+                return Math.max(...v);
+            },
+            // MOD:: ADD BLOCK END
+
+            // MOD:: ADD BLOCK
+            // MOD:: REM new add 'minof(p)' function
+            // MOD:: REM e.g.
+            // MOD:: REM minof(someObject.arrayValueProperty)
+            minof: (v) => {
+                return Math.min(...v);
+            },
+            // MOD:: ADD BLOCK END
 
             // MOD:: ADD BLOCK
             // MOD:: REM new add 'has v' syntax
@@ -141,7 +162,7 @@ exports.compileExpression =
             // MOD:: REM 此处更改会改变 filtrex 的原有的 “属性名当中的点号” 的含义，现在
             // MOD:: REM 属性名当中的点号表示子对象的意思。
             // MOD:: REM 如果对象属性名本身有点号，则写表达式时，需要用单引号引起来。
-            return ObjectUtils.getPropertyValueByNamePath(obj, name);
+            return ObjectAccessor.getPropertyValueByNamePath(obj, name);
         }
 
         function safeGetter(obj) {
@@ -203,7 +224,7 @@ function filtrexParser() {
                 ['or[^\\w]', 'return "or";'],
                 ['not[^\\w]', 'return "not";'],
                 ['in[^\\w]', 'return "in";'],
-                ['of[^\\w]', 'return "of";'],
+                // ['of[^\\w]', 'return "of";'], // MOD:: REM 改用点号来访问子属性
 
                 ['has[^\\w]', 'return "has";'], // MOD:: ADD new operator
 
@@ -229,7 +250,9 @@ function filtrexParser() {
                 // MOD:: REM 返回的内容包含单引号
                 // MOD:: REM
                 // MOD:: 如果要允许
-                [`'((?:''|(?:(?!')).)*)'`,
+                [
+                    //`'((?:''|(?:(?!')).)*)'`, // 单独一个单引号对包括起来的内容： 'foobar'
+                    `('((?:''|(?:(?!')).)*)'|\\w+)(\\.('((?:''|(?:(?!')).)*)'|\\w+))*`, // 多个属性值使用点号拼接的属性名称路径
                     `yytext = JSON.stringify(yytext);
                     return "SYMBOL";`
                 ], // 'some-symbol' and 'some''symbol', 即匹配属性值
@@ -270,7 +293,7 @@ function filtrexParser() {
             ['left', '^'],
             ['left', 'not'],
             ['left', 'UMINUS'],
-            ['left', 'of'],
+            // ['left', 'of'], // MOD:: REM 改用点号来访问子属性
         ],
         // Grammar
         bnf: {
@@ -297,6 +320,7 @@ function filtrexParser() {
                 ['e >= e', code(['Number(', 1, '>=', 3, ')'])],
 
                 ['e has e', code(['Number(functions.has(', 1, ',', 3, '))'])], // MOD:: ADD for new operator 'has'
+                ['e not has e', code(['Number(!functions.has(', 1, ',', 3, '))'])], // MOD:: ADD for new operator 'has'
 
                 ['e ? e : e', code([1, '?', 3, ':', 5])],
                 ['( e )', code([2])],
@@ -304,7 +328,7 @@ function filtrexParser() {
                 ['NUMBER', code([1])],
                 ['STRING', code([1])],
                 ['SYMBOL', code(['prop(', 1, ', data)'])],
-                ['SYMBOL of e', code(['prop(', 1, ',', 3, ')'])],
+                // ['SYMBOL of e', code(['prop(', 1, ',', 3, ')'])], // MOD:: REM 改用点号来访问子属性
                 ['SYMBOL ( )', code(['(functions.hasOwnProperty(', 1, ') ? functions[', 1, ']() : unknown(', 1, '))'])],
                 ['SYMBOL ( argsList )', code(['(functions.hasOwnProperty(', 1, ') ? functions[', 1, '](', 3, ') : unknown(', 1, '))'])],
                 ['e in ( inSet )', code(['+(function(o) { return ', 4, '; })(', 1, ')'])],

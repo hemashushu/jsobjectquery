@@ -43,6 +43,10 @@ describe('filtrex-mod Test', () => {
         assert(compileExpression('names has "bar"')(s1));
         assert(!compileExpression('names has "hello"')(s1));
         assert(!compileExpression('names has "world"')(s1));
+
+        assert(compileExpression('(1,2,3) has 2')({}));
+        assert(!compileExpression('(1,2,3) has 0')({}));
+        // assert(compileExpression('(1,2,3) not has 0')({}));
     });
 
     it('Test count() function', ()=>{
@@ -73,6 +77,32 @@ describe('filtrex-mod Test', () => {
         // 3 days = 3 * 24 * 60 * 60 seconds
         let r2 = compileExpression('days(0, 259200)')({});
         assert.equal(r2, 3);
+    });
+
+    it('Test maxof()/minof() function', ()=>{
+        let r1 = compileExpression('maxof(numbers)')({
+            numbers: [1,2,3,4,5,6]
+        });
+        assert.equal(r1, 6);
+
+        let r2 = compileExpression('minof(numbers)')({
+            numbers: [1,2,3,4,5,6]
+        });
+        assert.equal(r2, 1);
+
+        let r3 = compileExpression('minof((2,3,4))')({});
+        assert.equal(r3, 2);
+    });
+
+    it('Test ln()/log10()/exp() function', ()=>{
+        let r1 = compileExpression('ln(2.718281828)')({});
+        assert(Math.abs(1 - r1) < 0.01);
+
+        let r2 = compileExpression('log10(100)')({});
+        assert.equal(r2, 2);
+
+        let r3 = compileExpression('exp(1)')({});
+        assert(Math.abs(Math.E - r3) < 0.01);
     });
 
 });
