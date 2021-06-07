@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 
-const {ObjectQuery} = require('../index');
-const {ObjectUtils} = require('jsobjectutils');
+const { ObjectQuery } = require('../index');
+const { ObjectUtils } = require('jsobjectutils');
 
 describe('ObjectQuery Test', () => {
     it('Test where()', () => {
@@ -56,19 +56,19 @@ describe('ObjectQuery Test', () => {
         assert.equal(re6, 2);
 
         // 属性值为集合
-        let rf1 = ObjectQuery.from({numbers:[2,3,4]}).where('count(numbers)').collect();
+        let rf1 = ObjectQuery.from({ numbers: [2, 3, 4] }).where('count(numbers)').collect();
         assert.equal(rf1, 3);
 
-        let rf2 = ObjectQuery.from({numbers:[2,3,4]}).where('maxof(numbers)').collect();
+        let rf2 = ObjectQuery.from({ numbers: [2, 3, 4] }).where('maxof(numbers)').collect();
         assert.equal(rf2, 4);
 
-        let rf3 = ObjectQuery.from({numbers:[2,3,4]}).where('minof(numbers)').collect();
+        let rf3 = ObjectQuery.from({ numbers: [2, 3, 4] }).where('minof(numbers)').collect();
         assert.equal(rf3, 2);
 
         // 对象
         let o1 = {
             number: 123,
-            user:{
+            user: {
                 name: 'foo',
                 addr: {
                     city: 'sz'
@@ -86,7 +86,7 @@ describe('ObjectQuery Test', () => {
         assert.equal(rg3, 'sz');
     });
 
-    it('Test select()', ()=>{
+    it('Test select()', () => {
         let u1 = {
             id: 123,
             name: 'foo',
@@ -97,7 +97,7 @@ describe('ObjectQuery Test', () => {
         };
 
         let r1 = ObjectQuery.from(u1).select('id, name').collect();
-        assert(ObjectUtils.equals(r1, {id: 123, name: 'foo'}));
+        assert(ObjectUtils.equals(r1, { id: 123, name: 'foo' }));
 
         let r2 = ObjectQuery.from(u1).select('id, checked').collect();
         assert(ObjectUtils.equals(r2, {
@@ -105,20 +105,20 @@ describe('ObjectQuery Test', () => {
         }));
     });
 
-    let createItemObjects = ()=>{
+    let createItemObjects = () => {
         let itemObjects = [
-            {id:5, type: 'foo', checked:false, sub: {name: 'e'} },
-            {id:2, type: 'foo', checked:true, sub: {name: 'd'} },
-            {id:1, type: 'foo', checked:false, sub: {name: 'f'} },
-            {id:6, type: 'bar', checked:true, sub: {name: 'c'} },
-            {id:9, type: 'bar', checked:false, sub: {name: 'a'} },
-            {id:3, type: 'bar', checked:true, sub: {name: 'b'} }
+            { id: 5, type: 'foo', checked: false, sub: { name: 'e' } },
+            { id: 2, type: 'foo', checked: true, sub: { name: 'd' } },
+            { id: 1, type: 'foo', checked: false, sub: { name: 'f' } },
+            { id: 6, type: 'bar', checked: true, sub: { name: 'c' } },
+            { id: 9, type: 'bar', checked: false, sub: { name: 'a' } },
+            { id: 3, type: 'bar', checked: true, sub: { name: 'b' } }
         ];
         return itemObjects;
     };
 
     let isMatchObjectIds = (itemObjects, ids) => {
-        let actualIds = itemObjects.map(item=>{
+        let actualIds = itemObjects.map(item => {
             return item.id;
         });
 
@@ -130,29 +130,29 @@ describe('ObjectQuery Test', () => {
         return true;
     }
 
-    it('Test orderBy()', ()=>{
+    it('Test orderBy()', () => {
         let itemObjects = createItemObjects();
         ObjectQuery.from(itemObjects).orderBy('type').collect();
-        assert(isMatchObjectIds(itemObjects, [ 6, 9, 3, 5, 2, 1 ]));
+        assert(isMatchObjectIds(itemObjects, [6, 9, 3, 5, 2, 1]));
 
         ObjectQuery.from(itemObjects).orderBy('id DESC').collect();
-        assert(isMatchObjectIds(itemObjects, [ 9, 6, 5, 3, 2, 1 ]));
+        assert(isMatchObjectIds(itemObjects, [9, 6, 5, 3, 2, 1]));
 
         ObjectQuery.from(itemObjects).orderBy('type, id').collect();
         assert(isMatchObjectIds(itemObjects, [3, 6, 9, 1, 2, 5]));
 
         ObjectQuery.from(itemObjects).orderBy('sub.name').collect();
-        assert(isMatchObjectIds(itemObjects, [ 9, 3, 6, 2, 5, 1 ]));
+        assert(isMatchObjectIds(itemObjects, [9, 3, 6, 2, 5, 1]));
 
         ObjectQuery.from(itemObjects).orderBy('checked, sub.name').collect();
-        assert(isMatchObjectIds(itemObjects, [ 9, 5, 1, 3, 6, 2 ]));
+        assert(isMatchObjectIds(itemObjects, [9, 5, 1, 3, 6, 2]));
 
         ObjectQuery.from(itemObjects).orderBy('checked, sub.name DESC').collect();
         assert(isMatchObjectIds(itemObjects, [1, 5, 9, 2, 6, 3]));
 
     });
 
-    it('Test where,orderBy,select', ()=>{
+    it('Test where,orderBy,select', () => {
         let itemObjects = createItemObjects();
         let r1 = ObjectQuery.from(itemObjects)
             .where('id >= 3 and checked')
@@ -160,7 +160,7 @@ describe('ObjectQuery Test', () => {
             .orderBy('id')
             .collect();
 
-        assert(ObjectUtils.arrayEquals(r1,[
+        assert(ObjectUtils.arrayEquals(r1, [
             { id: 3, type: 'bar' },
             { id: 6, type: 'bar' }
         ]));

@@ -1,8 +1,6 @@
-const filtrex = require('../libs/filtrex-mod');
-const { compileExpression } = filtrex;
-
 const { ObjectUtils, ObjectComposer, ObjectSorter } = require('jsobjectutils');
 const { UnsupportedOperationException } = require('jsexception');
+const { ObjectEvaluator } = require('jsobjectevaluator');
 
 /**
  * 对象查询器，用于查询/筛选/重组/排序一组数据对象。
@@ -32,7 +30,7 @@ class ObjectQuery {
      * - 一个数据对象
      * - 一个数据对象数组
      *
-     * @param {*} conditionExpression 字符串，查询表达式，比如：
+     * @param {*} queryExpression 字符串，查询表达式，比如：
      *     - 1+2+3 // 返回 1 + 2 + 3
      *     - "hello" // 返回 "hello"
      *     - city // 返回对象的 city 属性值
@@ -41,21 +39,17 @@ class ObjectQuery {
      *     - addr.posecode == "518000" and checked == true
      * @returns
      */
-    where(conditionExpression) {
-        let evaluate = compileExpression(conditionExpression);
+    where(queryExpression) {
+        let objectEvaluator = new ObjectEvaluator(queryExpression);
         let value;
 
         if (Array.isArray(this.sourceObject)) {
-            value = this.sourceObject.filter(item=>{
-                // filtrex 的条件比较结果只有 1 和 0 两种结果，分别表示 true 和 false
-                let result = evaluate(item);
-                return (result === true ||
-                    (typeof result === 'number' && result !== 0) ||
-                    (typeof result === 'string' && result !== ''));
+            value = this.sourceObject.filter(item => {
+                return objectEvaluator.match(item);
             });
 
-        }else {
-            value = evaluate(this.sourceObject);
+        } else {
+            value = objectEvaluator.evaluate(this.sourceObject);
         }
 
         return new ObjectQuery(value);
@@ -87,7 +81,7 @@ class ObjectQuery {
      * @returns
      */
     select(nameSequence) {
-        if (Array.isArray(this.sourceObject)){
+        if (Array.isArray(this.sourceObject)) {
             if (this.sourceObject.length === 0) {
                 return this;
             }
@@ -99,7 +93,7 @@ class ObjectQuery {
 
             return new ObjectQuery(value);
 
-        }else if (ObjectUtils.isObject(this.sourceObject)) {
+        } else if (ObjectUtils.isObject(this.sourceObject)) {
             let value = ObjectComposer.composeByProperityNameSequence(this.sourceObject, nameSequence);
             return new ObjectQuery(value);
         }
