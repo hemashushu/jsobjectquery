@@ -48,7 +48,10 @@ class ObjectQuery {
         if (Array.isArray(this.sourceObject)) {
             value = this.sourceObject.filter(item=>{
                 // filtrex 的条件比较结果只有 1 和 0 两种结果，分别表示 true 和 false
-                return evaluate(item) === 1;
+                let result = evaluate(item);
+                return (result === true ||
+                    (typeof result === 'number' && result !== 0) ||
+                    (typeof result === 'string' && result !== ''));
             });
 
         }else {
